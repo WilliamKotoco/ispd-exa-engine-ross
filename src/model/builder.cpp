@@ -44,18 +44,17 @@ void SimulationModel::registerMachine(
   /// Check if the core count is not positive. If so, an error indicating
   /// the case is sent and the program is immediately aborted.
   if (coreCount <= 0)
-    ispd_error(
-        "At registering the machine %lu the core count must be positive "
-        "(Specified Core Count: %u).",
-        gid, coreCount);
+    ispd_error("At registering the machine %lu the core count must be positive "
+               "(Specified Core Count: %u).",
+               gid, coreCount);
 
   /// Checks if the interconnection bandwidth is not positive. IF so, an error
   /// indicating the case is sent and the program is immediately aborted.
   if (interconnectionBandwidth <= 0)
-    ispd_error(
-        "At registering the machine %lu the interconnection bandwidth must be positive "
-        "(Specified Interconnection Bandwidth: %lf).",
-        gid, interconnectionBandwidth);
+    ispd_error("At registering the machine %lu the interconnection bandwidth "
+               "must be positive "
+               "(Specified Interconnection Bandwidth: %lf).",
+               gid, interconnectionBandwidth);
 
   /// Register the service initializer for a machine with the specified
   /// logical process global identifier (GID).
@@ -163,7 +162,7 @@ void SimulationModel::registerSwitch(const tw_lpid gid, const double bandwidth,
 void SimulationModel::registerMaster(
     const tw_lpid gid, std::vector<tw_lpid> &&slaves,
     ispd::scheduler::Scheduler *const scheduler,
-    ispd::workload::Workload *const workload) {
+    ispd::workload::Workload *const workload, bool is_dynamic) {
 
   /// Check if the scheduler has not been specified. If so, an error indicating
   /// the case is sent and the program is immediately aborted.
@@ -184,17 +183,19 @@ void SimulationModel::registerMaster(
 
   /// Register the service initializer for a master with the specified
   /// logical process global identifier.
-  registerServiceInitializer(gid, [workload, scheduler, slaves](void *state) {
-    ispd::services::master_state *s =
-        static_cast<ispd::services::master_state *>(state);
+  registerServiceInitializer(
+      gid, [workload, scheduler, slaves, is_dynamic](void *state) {
+        ispd::services::master_state *s =
+            static_cast<ispd::services::master_state *>(state);
 
-    /// Specify the master's slaves.
-    s->slaves = slaves;
+        /// Specify the master's slaves.
+        s->slaves = slaves;
 
-    /// Specify the master's schedule and workload.
-    s->scheduler = scheduler;
-    s->workload = workload;
-  });
+        /// Specify the master's schedule and workload.
+        s->scheduler = scheduler;
+        s->workload = workload;
+        s->dynamic = is_dynamic;
+      });
 
   /// Print a debug indicating that a master initializer has been registered.
   ispd_debug("A master with GID %lu has been registered (SC: %u, S: %s).", gid,
@@ -289,9 +290,10 @@ void registerSwitch(const tw_lpid gid, const double bandwidth,
 
 void registerMaster(const tw_lpid gid, std::vector<tw_lpid> &&slaves,
                     ispd::scheduler::Scheduler *const scheduler,
-                    ispd::workload::Workload *const workload) {
+                    ispd::workload::Workload *const workload, bool is_dynamic) {
   /// Forward the master registration to the global model.
-  g_Model->registerMaster(gid, std::move(slaves), scheduler, workload);
+  g_Model->registerMaster(gid, std::move(slaves), scheduler, workload,
+                          is_dynamic);
 }
 
 void registerUser(const std::string &name,

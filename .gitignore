@@ -56,3 +56,9 @@ dkms.conf
 
 # Clangd
 compile_flags.txt
+.idea/workspace.xml
+.idea/codeStyles/Project.xml
+.idea/codeStyles/codeStyleConfig.xml
+.idea/workspace.xml
+/.idea
+/.idea

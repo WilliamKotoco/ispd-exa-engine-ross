@@ -41,8 +41,9 @@ public:
       const double wattageMax) noexcept
       : m_PowerPerCore(power / coreCount), m_Load(load), m_CoreCount(coreCount),
         m_InterconnectBandwidth(interconnectionBandwidth),
-        m_GpuPowerPerCore(gpuPower / gpuCoreCount), m_GpuCoreCount(gpuCoreCount),
-        m_WattageIdle(wattageIdle), m_WattageMax(wattageMax),
+        m_GpuPowerPerCore(gpuPower / gpuCoreCount),
+        m_GpuCoreCount(gpuCoreCount), m_WattageIdle(wattageIdle),
+        m_WattageMax(wattageMax),
         m_WattagePerCore((wattageMax - wattageIdle) / coreCount) {}
 
   /// \brief Calculates the time required to process a task.
