@@ -59,39 +59,7 @@ struct master {
     s->metrics.completed_tasks = 0;
     s->metrics.total_turnaround_time = 0;
 
-    /// In dynamic scheduling, tasks are allocated to all resources in the
-    /// beginning of the scheduling process
-    if (s->dynamic) {
 
-      for (int i = 0; i < s->slaves.size(); i++) {
-        const ispd::routing::Route *route =
-            ispd::routing_table::getRoute(lp->gid, s->slaves.at(i));
-
-        tw_event *const e = tw_event_new(route->get(0), g_tw_lookahead, lp);
-        ispd_message *const m = static_cast<ispd_message *>(tw_event_data(e));
-
-        m->type = message_type::ARRIVAL;
-
-        s->workload->generateWorkload(lp->rng, m->task.m_ProcSize,
-                                      m->task.m_CommSize);
-
-        m->task.m_Offload = s->workload->getComputingOffload();
-
-        /// Task information specification.
-        m->task.m_Origin = lp->gid;
-        m->task.m_Dest = s->slaves.at(i);
-        m->task.m_SubmitTime = tw_now(lp);
-        m->task.m_Owner = s->workload->getOwner();
-
-        m->route_offset = 1;
-        m->previous_service_id = lp->gid;
-        m->downward_direction = 1;
-        m->task_processed = 0;
-
-        tw_event_send(e);
-      }
-
-    } else {
 
       /// Checks if the specified workload has remaining tasks. If so, a
       /// generate message will be sent to the master itself to start generating
@@ -110,7 +78,7 @@ struct master {
         m->type = message_type::GENERATE;
 
         tw_event_send(e);
-      }
+
     }
 
     /// Print a debug message.
@@ -234,12 +202,14 @@ private:
     m->previous_service_id = lp->gid;
     m->downward_direction = 1;
     m->task_processed = 0;
+    m->resource_id = msg->resource_id;
 
-    tw_event_send(e);
+
+      tw_event_send(e);
 
     /// Checks if the there are more remaining tasks to be generated. If so, a
     /// generate message is sent to the master by itself to generate a new task.
-    if (s->workload->getRemainingTasks() > 0) {
+    if (!s->dynamic && s->workload->getRemainingTasks() > 0) {
       double offset;
 
       s->workload->generateInterarrival(lp->rng, offset);
@@ -304,6 +274,21 @@ private:
     /// Update the master's metrics.
     s->metrics.completed_tasks++;
     s->metrics.total_turnaround_time += turnaround_time;
+
+    if (s->dynamic && s->workload->getRemainingTasks() > 0)
+    {
+        double offset;
+
+        s->workload->generateInterarrival(lp->rng, offset);
+
+        /// Send a generate message to itself.
+        tw_event *const e = tw_event_new(lp->gid, g_tw_lookahead + offset, lp);
+        ispd_message *const m = static_cast<ispd_message *>(tw_event_data(e));
+
+        m->type = message_type::GENERATE;
+        m->resource_id = msg->resource_id;
+        tw_event_send(e);
+    }
   }
 
   static void arrival_rc(master_state *s, tw_bf *bf, ispd_message *msg,
