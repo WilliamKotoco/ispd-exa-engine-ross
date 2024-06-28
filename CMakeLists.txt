@@ -21,7 +21,8 @@ SET(ispd_srcs
   # Model-building and model-loading related files.
   ./src/model/builder.cpp
   ./src/model_loader/model_loader.cpp
-  
+  ./src/model_loader/scheduler_loader.cpp
+
   # Routing-related files.
   ./src/routing/routing.cpp
   
