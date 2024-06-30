@@ -34,12 +34,12 @@ public:
     m_NextSlaveIndex = std::vector<tw_lpid>::size_type{0};
   }
 
-  [[nodiscard]] tw_lpid forwardSchedule(std::vector<tw_lpid> &slaves, tw_bf *bf,
+  [[nodiscard]] tw_lpid forwardSchedule(std::vector<ispd::services::slaves> &slaves, tw_bf *bf,
                                         ispd_message *msg, tw_lp *lp) override {
     bf->c0 = 0;
 
     /// Select the next slave.
-    const tw_lpid slave_id = slaves[m_NextSlaveIndex];
+    const tw_lpid slave_id = slaves[m_NextSlaveIndex].id;
 
     /// Increment to the next slave identifier.
     m_NextSlaveIndex++;
@@ -61,7 +61,7 @@ public:
     return slave_id;
   }
 
-  void reverseSchedule(std::vector<tw_lpid> &slaves, tw_bf *bf,
+  void reverseSchedule(std::vector<ispd::services::slaves> &slaves, tw_bf *bf,
                        ispd_message *msg, tw_lp *lp) override {
     /// Check if the bitfield if the incoming event when
     /// forward processed HAS overflown the slave count. Therefore,

@@ -8,15 +8,15 @@
 #include <ispd/services/switch.hpp>
 #include <ispd/configuration/machine.hpp>
 
-static inline std::string firstSlaves(const std::vector<tw_lpid> &slaves) {
+static inline std::string firstSlaves(const std::vector<ispd::services::slaves> &slaves) {
   const auto maxToShow = std::vector<tw_lpid>::size_type(10);
   const auto slavesToShowCount = std::min(maxToShow, slaves.size());
 
   std::stringstream ss;
 
   for (int i = 0; i < slavesToShowCount - 1; i++)
-    ss << slaves[i] << ", ";
-  ss << slaves[slavesToShowCount - 1];
+    ss << slaves[i].id << ", ";
+  ss << slaves[slavesToShowCount - 1].id;
   return ss.str();
 }
 
@@ -161,7 +161,7 @@ void SimulationModel::registerSwitch(const tw_lpid gid, const double bandwidth,
 }
 
 void SimulationModel::registerMaster(
-    const tw_lpid gid, std::vector<tw_lpid> &&slaves,
+    const tw_lpid gid, std::vector<ispd::services::slaves> &&slaves,
     ispd::scheduler::Scheduler *const scheduler,
     ispd::workload::Workload *const workload) {
 
@@ -287,7 +287,7 @@ void registerSwitch(const tw_lpid gid, const double bandwidth,
   g_Model->registerSwitch(gid, bandwidth, load, latency);
 }
 
-void registerMaster(const tw_lpid gid, std::vector<tw_lpid> &&slaves,
+void registerMaster(const tw_lpid gid, std::vector<ispd::services::slaves> &&slaves,
                     ispd::scheduler::Scheduler *const scheduler,
                     ispd::workload::Workload *const workload) {
   /// Forward the master registration to the global model.

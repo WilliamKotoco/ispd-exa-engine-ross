@@ -411,15 +411,35 @@ static auto loadMasterScheduler(const json &type) noexcept
   return nullptr;
 }
 
-static auto loadMasterSlaves(const json &slavesArray) noexcept
-    -> std::vector<tw_lpid> {
-  std::vector<tw_lpid> slaves;
-  for (const auto &slaveId : slavesArray)
-    slaves.emplace_back(slaveId.get<tw_lpid>());
+static auto loadMasterSlaves(const json &slavesArray, const json &services) noexcept
+    -> std::vector<ispd::services::slaves> {
+  std::vector<ispd::services::slaves> slaves;
+
+  const json &machines = services[MODEL_SERVICES_MACHINES_SUBSECTION];
+
+  int i = 0;
+  for (const json &machine : machines) {
+    struct ispd::services::slaves slave;
+    slave.id = machine[MODEL_SERVICE_MACHINE_ID_KEY].get<tw_lpid>();
+    slave.cpuCoreCount =
+        machine[MODEL_SERVICE_MACHINE_CORECOUNT_KEY].get<unsigned>();
+    slave.gpuCoreCount =
+        machine[MODEL_SERVICE_MACHINE_GPUCORECOUNT_KEY].get<unsigned>();
+    slave.powerPerCore = machine[MODEL_SERVICE_MACHINE_POWER_KEY].get<double>();
+    slave.gpuPowerPerCore =
+        machine[MODEL_SERVICE_MACHINE_GPUPOWER_KEY].get<double>();
+    slave.runningTasks = 0;
+    slave.runningMflops = 0.0;
+    slave.priority = 0.0;
+    slave.position = i;
+    slaves.push_back(slave);
+    i++;
+  }
+
   return slaves;
 }
 
-static auto loadMaster(const json &master, const size_t masterIndex) noexcept
+static auto loadMaster(const json &master, const size_t masterIndex, const json &services) noexcept
     -> void {
   const auto &masterRequiredAttributes = {MODEL_SERVICE_MASTER_ID_KEY,
                                           MODEL_SERVICE_MASTER_SCHEDULER_KEY,
@@ -443,8 +463,8 @@ static auto loadMaster(const json &master, const size_t masterIndex) noexcept
 
   ispd::scheduler::Scheduler *scheduler =
       loadMasterScheduler(master[MODEL_SERVICE_MASTER_SCHEDULER_KEY]);
-  std::vector<tw_lpid> slaves =
-      loadMasterSlaves(master[MODEL_SERVICE_MASTER_SLAVES_KEY]);
+  std::vector<ispd::services::slaves> slaves =
+      loadMasterSlaves(master[MODEL_SERVICE_MASTER_SLAVES_KEY], services);
   ispd::workload::Workload *workload = g_ModelLoader_Workloads.at(id);
 
   // Register the master.
@@ -466,7 +486,7 @@ static auto loadMasters(const json &services) noexcept -> void {
   size_t masterIndex = 0;
 
   for (const auto &master : masters) {
-    loadMaster(master, masterIndex);
+    loadMaster(master, masterIndex, services);
     masterIndex++;
   }
 

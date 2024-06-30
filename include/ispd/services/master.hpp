@@ -13,13 +13,13 @@
 #include <ispd/scheduler/scheduler.hpp>
 #include <ispd/scheduler/round_robin.hpp>
 #include <ispd/metrics/master_metrics.hpp>
-
+#include <ispd/services/slaves.hpp>
 namespace ispd {
 namespace services {
 
 struct master_state {
   /// \brief Master's slaves.
-  std::vector<tw_lpid> slaves;
+  std::vector<ispd::services::slaves> slaves;
 
   /// \brief Master's scheduler.
   ispd::scheduler::Scheduler *scheduler;
@@ -42,6 +42,13 @@ struct master {
    
     /// Initialize the scheduler.
     s->scheduler->initScheduler();
+
+
+    for (int i = 0 ; i < s->slaves.size(); i++)
+    {
+      ispd_debug("Test: Machine %lu %lf", s->slaves.at(i).id, s->slaves.at(i).powerPerCore);
+    }
+    exit(0);
 
     const uint32_t registered_routes_count = ispd::routing_table::countRoutes(lp->gid);
 
