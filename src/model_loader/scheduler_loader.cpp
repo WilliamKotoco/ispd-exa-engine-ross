@@ -33,35 +33,24 @@ struct FileInterpreter readSchedulerFile(std::string path) {
       std::string type;
       iss >> type;
 
-      if(type == "FIFO")
-      {
+      if (type == "FIFO") {
         fileInterpreter.type = FIFO;
-      }
-      else if (type == "RANDOM")
-      {
+      } else if (type == "RANDOM") {
         fileInterpreter.type = RANDOM;
-      }
-      else if (type == "INCREASING")
-      {
+      } else if (type == "INCREASING") {
         fileInterpreter.type = INCREASING;
         fileInterpreter.formula = line.erase(0, 19);
-        fileInterpreter.formula.append((" + 0 * (cpuCores + cpuPP + gpuCores + gpuPP + TPS + TCS + TOFF + RMFE)"));
+        fileInterpreter.formula.append((" + 0 * (cpuCores + cpuPP + gpuCores + "
+                                        "gpuPP + TPS + TCS + TOFF + RMFE)"));
 
-      }
-      else
-      {
+      } else {
         fileInterpreter.type = DECREASING;
         fileInterpreter.formula = line.erase(0, 18);
-        fileInterpreter.formula.append((" + 0 * (cpuCores + cpuPP + gpuCores + gpuPP + TPS + TCS + TOFF + RMFE)"));
-
-
+        fileInterpreter.formula.append((" + 0 * (cpuCores + cpuPP + gpuCores + "
+                                        "gpuPP + TPS + TCS + TOFF + RMFE)"));
       }
-
     }
   }
-
-
-
 
   ispd_debug("Custom scheduler loaded: \n "
              "Name :%s \n"
@@ -69,7 +58,8 @@ struct FileInterpreter readSchedulerFile(std::string path) {
              "Dynamic: %d \n"
              "Restriction %d \n"
              "Formula: %s",
-             fileInterpreter.name.c_str(), fileInterpreter.type, fileInterpreter.isDynamic,
-             fileInterpreter.restriction, fileInterpreter.formula.c_str());
+             fileInterpreter.name.c_str(), fileInterpreter.type,
+             fileInterpreter.isDynamic, fileInterpreter.restriction,
+             fileInterpreter.formula.c_str());
   return fileInterpreter;
 }

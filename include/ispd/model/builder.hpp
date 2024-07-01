@@ -31,9 +31,11 @@ public:
   void registerSwitch(const tw_lpid gid, const double bandwidth,
                       const double load, const double latency);
 
-  void registerMaster(const tw_lpid gid, std::vector<ispd::services::slaves> &&slaves,
+  void registerMaster(const tw_lpid gid,
+                      std::vector<ispd::services::slaves> &&slaves,
                       ispd::scheduler::Scheduler *const scheduler,
-                      ispd::workload::Workload *const workload, bool is_dynamic, std::string  filePath);
+                      ispd::workload::Workload *const workload, bool is_dynamic,
+                      std::string filePath);
 
   void registerUser(const std::string &name,
                     const double energyConsumptionLimit);
@@ -89,9 +91,11 @@ void registerLink(const tw_lpid gid, const tw_lpid from, const tw_lpid to,
 void registerSwitch(const tw_lpid gid, const double bandwidth,
                     const double load, const double latency);
 
-void registerMaster(const tw_lpid gid, std::vector<ispd::services::slaves> &&slaves,
+void registerMaster(const tw_lpid gid,
+                    std::vector<ispd::services::slaves> &&slaves,
                     ispd::scheduler::Scheduler *const scheduler,
-                    ispd::workload::Workload *const workload, bool is_dynamic, std::string  filePath);
+                    ispd::workload::Workload *const workload, bool is_dynamic,
+                    std::string filePath);
 
 void registerUser(const std::string &name, const double energyConsumptionLimit);
 

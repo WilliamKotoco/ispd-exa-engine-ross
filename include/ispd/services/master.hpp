@@ -47,8 +47,6 @@ struct master {
     /// Initialize the scheduler.
     s->scheduler->initScheduler(s->file_path);
 
-
-
     const uint32_t registered_routes_count =
         ispd::routing_table::countRoutes(lp->gid);
 
@@ -63,26 +61,23 @@ struct master {
     s->metrics.completed_tasks = 0;
     s->metrics.total_turnaround_time = 0;
 
+    /// Checks if the specified workload has remaining tasks. If so, a
+    /// generate message will be sent to the master itself to start generating
+    /// the workload. Otherwise, no workload is generate at all, since at
+    /// initialization it has been identified that the specified workload has
+    /// no tasks.
+    if (s->workload->getRemainingTasks() > 0) {
+      double offset;
 
+      s->workload->generateInterarrival(lp->rng, offset);
 
-      /// Checks if the specified workload has remaining tasks. If so, a
-      /// generate message will be sent to the master itself to start generating
-      /// the workload. Otherwise, no workload is generate at all, since at
-      /// initialization it has been identified that the specified workload has
-      /// no tasks.
-      if (s->workload->getRemainingTasks() > 0) {
-        double offset;
+      /// Send a generate message to itself.
+      tw_event *const e = tw_event_new(lp->gid, g_tw_lookahead + offset, lp);
+      ispd_message *const m = static_cast<ispd_message *>(tw_event_data(e));
 
-        s->workload->generateInterarrival(lp->rng, offset);
+      m->type = message_type::GENERATE;
 
-        /// Send a generate message to itself.
-        tw_event *const e = tw_event_new(lp->gid, g_tw_lookahead + offset, lp);
-        ispd_message *const m = static_cast<ispd_message *>(tw_event_data(e));
-
-        m->type = message_type::GENERATE;
-
-        tw_event_send(e);
-
+      tw_event_send(e);
     }
 
     /// Print a debug message.
@@ -206,10 +201,9 @@ private:
     m->previous_service_id = lp->gid;
     m->downward_direction = 1;
     m->task_processed = 0;
-    m->resource_id = msg->resource_id;
+    m->machine_position = msg->machine_position;
 
-
-      tw_event_send(e);
+    tw_event_send(e);
 
     /// Checks if the there are more remaining tasks to be generated. If so, a
     /// generate message is sent to the master by itself to generate a new task.
@@ -279,19 +273,18 @@ private:
     s->metrics.completed_tasks++;
     s->metrics.total_turnaround_time += turnaround_time;
 
-    if (s->dynamic && s->workload->getRemainingTasks() > 0)
-    {
-        double offset;
+    if (s->dynamic && s->workload->getRemainingTasks() > 0) {
+      double offset;
 
-        s->workload->generateInterarrival(lp->rng, offset);
+      s->workload->generateInterarrival(lp->rng, offset);
 
-        /// Send a generate message to itself.
-        tw_event *const e = tw_event_new(lp->gid, g_tw_lookahead + offset, lp);
-        ispd_message *const m = static_cast<ispd_message *>(tw_event_data(e));
+      /// Send a generate message to itself.
+      tw_event *const e = tw_event_new(lp->gid, g_tw_lookahead + offset, lp);
+      ispd_message *const m = static_cast<ispd_message *>(tw_event_data(e));
 
-        m->type = message_type::GENERATE;
-        m->resource_id = msg->resource_id;
-        tw_event_send(e);
+      m->type = message_type::GENERATE;
+      m->machine_position = msg->machine_position;
+      tw_event_send(e);
     }
   }
 

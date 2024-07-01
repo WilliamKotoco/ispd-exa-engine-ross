@@ -45,10 +45,9 @@ public:
   /// \return The identifier of the simulation entity that is scheduled to
   ///         execute the task.
   ///
-  [[nodiscard]] virtual tw_lpid forwardSchedule(std::vector<ispd::services::slaves> &slaves,
-                                                tw_bf *const bf,
-                                                ispd_message *const msg,
-                                                tw_lp *const lp) = 0;
+  [[nodiscard]] virtual tw_lpid
+  forwardSchedule(std::vector<ispd::services::slaves> &slaves, tw_bf *const bf,
+                  ispd_message *const msg, tw_lp *const lp) = 0;
 
   /// \brief Performs reverse scheduling of tasks.
   ///
@@ -64,8 +63,9 @@ public:
   ///            operation.
   /// \param lp A pointer to the logical process performing the scheduling.
   ///
-  virtual void reverseSchedule(std::vector<ispd::services::slaves> &slaves, tw_bf *const bf,
-                               ispd_message *const msg, tw_lp *const lp) = 0;
+  virtual void reverseSchedule(std::vector<ispd::services::slaves> &slaves,
+                               tw_bf *const bf, ispd_message *const msg,
+                               tw_lp *const lp) = 0;
 };
 
 } // namespace ispd::scheduler

@@ -34,8 +34,9 @@ public:
     m_NextSlaveIndex = std::vector<tw_lpid>::size_type{0};
   }
 
-  [[nodiscard]] tw_lpid forwardSchedule(std::vector<ispd::services::slaves> &slaves, tw_bf *bf,
-                                        ispd_message *msg, tw_lp *lp) override {
+  [[nodiscard]] tw_lpid
+  forwardSchedule(std::vector<ispd::services::slaves> &slaves, tw_bf *bf,
+                  ispd_message *msg, tw_lp *lp) override {
     bf->c0 = 0;
 
     /// Select the next slave.

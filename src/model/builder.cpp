@@ -8,7 +8,8 @@
 #include <ispd/services/switch.hpp>
 #include <ispd/configuration/machine.hpp>
 
-static inline std::string firstSlaves(const std::vector<ispd::services::slaves> &slaves) {
+static inline std::string
+firstSlaves(const std::vector<ispd::services::slaves> &slaves) {
   const auto maxToShow = std::vector<tw_lpid>::size_type(10);
   const auto slavesToShowCount = std::min(maxToShow, slaves.size());
 
@@ -162,7 +163,8 @@ void SimulationModel::registerSwitch(const tw_lpid gid, const double bandwidth,
 void SimulationModel::registerMaster(
     const tw_lpid gid, std::vector<ispd::services::slaves> &&slaves,
     ispd::scheduler::Scheduler *const scheduler,
-    ispd::workload::Workload *const workload, bool is_dynamic, std::string  filePath) {
+    ispd::workload::Workload *const workload, bool is_dynamic,
+    std::string filePath) {
 
   /// Check if the scheduler has not been specified. If so, an error indicating
   /// the case is sent and the program is immediately aborted.
@@ -289,9 +291,11 @@ void registerSwitch(const tw_lpid gid, const double bandwidth,
   g_Model->registerSwitch(gid, bandwidth, load, latency);
 }
 
-void registerMaster(const tw_lpid gid, std::vector<ispd::services::slaves> &&slaves,
+void registerMaster(const tw_lpid gid,
+                    std::vector<ispd::services::slaves> &&slaves,
                     ispd::scheduler::Scheduler *const scheduler,
-                    ispd::workload::Workload *const workload, bool is_dynamic, std::string filePath) {
+                    ispd::workload::Workload *const workload, bool is_dynamic,
+                    std::string filePath) {
   /// Forward the master registration to the global model.
   g_Model->registerMaster(gid, std::move(slaves), scheduler, workload,
                           is_dynamic, filePath);

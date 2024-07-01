@@ -22,7 +22,6 @@ struct ispd_message {
   int route_offset;
   tw_lpid previous_service_id;
 
-
   /// \brief Machine information
   int machine_position; /// position within the array of machines
 

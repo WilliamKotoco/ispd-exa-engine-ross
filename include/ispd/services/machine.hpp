@@ -142,7 +142,7 @@ struct machine {
       m->route_offset = msg->downward_direction ? (msg->route_offset + 1)
                                                 : (msg->route_offset - 1);
       m->previous_service_id = lp->gid;
-      m->resource_id = msg->resource_id;
+      m->machine_position = msg->machine_position;
 
       tw_event_send(e);
     }

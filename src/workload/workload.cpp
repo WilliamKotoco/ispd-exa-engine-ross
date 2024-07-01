@@ -19,7 +19,7 @@ namespace ispd::workload {
   }
 
   m_Owner = userIterator->second.getId();
-  m_RemainingTasks = remainingTasks ;
+  m_RemainingTasks = remainingTasks;
   m_InterarrivalDist = std::move(interarrivalDist);
   m_ComputingOffload = computingOffload;
 }

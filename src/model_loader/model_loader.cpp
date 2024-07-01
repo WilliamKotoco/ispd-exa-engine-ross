@@ -396,8 +396,7 @@ static auto loadMasterScheduler(const json &type) noexcept
   } else {
     struct FileInterpreter scheduler = readSchedulerFile(type);
 
-    if (scheduler.type == RANDOM)
-    {
+    if (scheduler.type == RANDOM) {
       return new ispd::scheduler::Random;
     }
 
@@ -408,7 +407,8 @@ static auto loadMasterScheduler(const json &type) noexcept
   return nullptr;
 }
 
-static auto loadMasterSlaves(const json &slavesArray, const json &services) noexcept
+static auto loadMasterSlaves(const json &slavesArray,
+                             const json &services) noexcept
     -> std::vector<ispd::services::slaves> {
   std::vector<ispd::services::slaves> slaves;
 
@@ -435,8 +435,8 @@ static auto loadMasterSlaves(const json &slavesArray, const json &services) noex
   return slaves;
 }
 
-static auto loadMaster(const json &master, const size_t masterIndex, const json &services) noexcept
-    -> void {
+static auto loadMaster(const json &master, const size_t masterIndex,
+                       const json &services) noexcept -> void {
   const auto &masterRequiredAttributes = {
       MODEL_SERVICE_MASTER_ID_KEY, MODEL_SERVICE_MASTER_SCHEDULER_KEY,
       MODEL_SERVICE_MASTER_SLAVES_KEY, MODEL_SERVICE_MASTER_ISDYNAMIC_KEY};
@@ -459,14 +459,11 @@ static auto loadMaster(const json &master, const size_t masterIndex, const json 
 
   std::string filePath = master[MODEL_SERVICE_MASTER_SCHEDULER_KEY];
 
-
-
   ispd::scheduler::Scheduler *scheduler =
       loadMasterScheduler(master[MODEL_SERVICE_MASTER_SCHEDULER_KEY]);
   std::vector<ispd::services::slaves> slaves =
       loadMasterSlaves(master[MODEL_SERVICE_MASTER_SLAVES_KEY], services);
   ispd::workload::Workload *workload = g_ModelLoader_Workloads.at(id);
-
 
   // Register the master.
   bool is_dynamic = master[MODEL_SERVICE_MASTER_ISDYNAMIC_KEY];
