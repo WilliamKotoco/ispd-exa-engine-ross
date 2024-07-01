@@ -26,7 +26,7 @@ public:
   /// This method is responsible for initializing any necessary data structures
   /// or state required by the scheduler before scheduling tasks.
   ///
-  virtual void initScheduler() = 0;
+  virtual void initScheduler(std::string file_path) = 0;
 
   /// \brief Performs forward scheduling of tasks.
   ///

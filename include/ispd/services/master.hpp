@@ -29,6 +29,9 @@ struct master_state {
 
   /// \brief Master's metrics.
   ispd::metrics::MasterMetrics metrics;
+
+  /// @temp \brief File path
+  std::string file_path;
 };
 
 struct master {
@@ -39,16 +42,12 @@ struct master {
 
     /// Call the service initializer for this logical process.
     service_initializer(s);
-   
+
+
     /// Initialize the scheduler.
-    s->scheduler->initScheduler();
+    s->scheduler->initScheduler(s->file_path);
 
 
-    for (int i = 0 ; i < s->slaves.size(); i++)
-    {
-      ispd_debug("Test: Machine %lu %lf", s->slaves.at(i).id, s->slaves.at(i).powerPerCore);
-    }
-    exit(0);
 
     const uint32_t registered_routes_count = ispd::routing_table::countRoutes(lp->gid);
 

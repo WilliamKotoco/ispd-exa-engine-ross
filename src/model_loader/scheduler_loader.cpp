@@ -7,7 +7,7 @@ struct FileInterpreter readSchedulerFile(std::string path) {
   std::string line;
 
   if (!scheduler_file.is_open())
-    ispd_error("Error: could not open scheduler's file.");
+    ispd_error("Error: could not open scheduler's file %s.", path.c_str());
 
   while (std::getline(scheduler_file, line)) {
     std::string token;

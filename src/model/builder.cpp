@@ -163,7 +163,7 @@ void SimulationModel::registerSwitch(const tw_lpid gid, const double bandwidth,
 void SimulationModel::registerMaster(
     const tw_lpid gid, std::vector<ispd::services::slaves> &&slaves,
     ispd::scheduler::Scheduler *const scheduler,
-    ispd::workload::Workload *const workload) {
+    ispd::workload::Workload *const workload, std::string  filePath) {
 
   /// Check if the scheduler has not been specified. If so, an error indicating
   /// the case is sent and the program is immediately aborted.
@@ -184,7 +184,7 @@ void SimulationModel::registerMaster(
 
   /// Register the service initializer for a master with the specified
   /// logical process global identifier.
-  registerServiceInitializer(gid, [workload, scheduler, slaves](void *state) {
+  registerServiceInitializer(gid, [workload, scheduler, slaves, filePath](void *state) {
     ispd::services::master_state *s =
         static_cast<ispd::services::master_state *>(state);
 
@@ -194,6 +194,7 @@ void SimulationModel::registerMaster(
     /// Specify the master's schedule and workload.
     s->scheduler = scheduler;
     s->workload = workload;
+    s->file_path = filePath;
   });
 
   /// Print a debug indicating that a master initializer has been registered.
@@ -289,9 +290,9 @@ void registerSwitch(const tw_lpid gid, const double bandwidth,
 
 void registerMaster(const tw_lpid gid, std::vector<ispd::services::slaves> &&slaves,
                     ispd::scheduler::Scheduler *const scheduler,
-                    ispd::workload::Workload *const workload) {
+                    ispd::workload::Workload *const workload, std::string  filePath) {
   /// Forward the master registration to the global model.
-  g_Model->registerMaster(gid, std::move(slaves), scheduler, workload);
+  g_Model->registerMaster(gid, std::move(slaves), scheduler, workload, filePath);
 }
 
 void registerUser(const std::string &name,

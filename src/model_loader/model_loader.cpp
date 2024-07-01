@@ -12,7 +12,7 @@
 #include <ispd/workload/interarrival.hpp>
 #include <ispd/model_loader/model_loader.hpp>
 #include <ispd/model_loader/scheduler_loader.hpp>
-
+#include <ispd/scheduler/random_gen_scheduler.hpp>
 /// \brief User - Keys.
 #define MODEL_USERS_SECTION ("users")
 #define MODEL_USER_NAME_KEY ("name")
@@ -395,16 +395,12 @@ static auto loadMasterScheduler(const json &type) noexcept
   } else {
     struct FileInterpreter scheduler = readSchedulerFile(type);
 
-    ispd_debug("Custom scheduler loaded: \n "
-                         "Name :%s \n"
-                         "Type: %d \n"
-                         "Dynamic: %d \n"
-                         "Restriction %d \n"
-                         "Formula: %s",
-                         scheduler.name.c_str(), scheduler.type, scheduler.isDynamic,
-                         scheduler.restriction, scheduler.formula.c_str());
+    if (scheduler.type == RANDOM)
+    {
+      return new ispd::scheduler::Random;
+    }
 
-    exit(0);
+    return nullptr;
     //    ispd_error("Unexepected %s scheduler.",
     //    type.get<std::string>().c_str());
   }
@@ -431,7 +427,6 @@ static auto loadMasterSlaves(const json &slavesArray, const json &services) noex
     slave.runningTasks = 0;
     slave.runningMflops = 0.0;
     slave.priority = 0.0;
-    slave.position = i;
     slaves.push_back(slave);
     i++;
   }
@@ -461,14 +456,19 @@ static auto loadMaster(const json &master, const size_t masterIndex, const json 
                "identifier %lu.",
                masterIndex, id);
 
+  std::string filePath = master[MODEL_SERVICE_MASTER_SCHEDULER_KEY];
+
+
+
   ispd::scheduler::Scheduler *scheduler =
       loadMasterScheduler(master[MODEL_SERVICE_MASTER_SCHEDULER_KEY]);
   std::vector<ispd::services::slaves> slaves =
       loadMasterSlaves(master[MODEL_SERVICE_MASTER_SLAVES_KEY], services);
   ispd::workload::Workload *workload = g_ModelLoader_Workloads.at(id);
 
+
   // Register the master.
-  ispd::this_model::registerMaster(id, std::move(slaves), scheduler, workload);
+  ispd::this_model::registerMaster(id, std::move(slaves), scheduler, workload, filePath);
   registerGidToType(id, LogicalProcessType::MASTER);
 
   ispd_debug("Master listed at %lu with identifier %lu has been loaded from "

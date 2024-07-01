@@ -25,6 +25,10 @@ struct ispd_message {
   int route_offset;
   tw_lpid previous_service_id;
 
+
+  /// \brief Machine information
+  int machine_position; /// position within the array of machines
+
   /// \brief Message flags.
   unsigned int downward_direction: 1;
   unsigned int task_processed: 1;
