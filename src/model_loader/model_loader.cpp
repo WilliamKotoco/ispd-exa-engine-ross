@@ -47,6 +47,7 @@
 #define MODEL_SERVICE_MASTER_ID_KEY ("id")
 #define MODEL_SERVICE_MASTER_SCHEDULER_KEY ("scheduler")
 #define MODEL_SERVICE_MASTER_SLAVES_KEY ("slaves")
+#define MODEL_SERVICE_MASTER_ISDYNAMIC_KEY ("isDynamic")
 
 #define MODEL_SERVICE_MACHINE_ID_KEY ("id")
 #define MODEL_SERVICE_MACHINE_POWER_KEY ("power")
@@ -185,9 +186,9 @@ static auto loadUsers(const json &data) noexcept -> void {
 /// specification.
 ///
 /// \note The function assumes that the workload JSON contains the
-///       "interarrival_type" attribute, specifying the type of interarrival
-///       distribution for the workload. If this attribute is missing, the
-///       function logs an error using the ispd_error macro.
+///       "interarrival_type" attribute, specifscheduled_slave_idying the type
+///       of interarrival distribution for the workload. If this attribute is
+///       missing, the function logs an error using the ispd_error macro.
 ///
 /// \note The function assumes that the interarrival type is specified as a
 ///       sub-object under the "interarrival_type" attribute. The type of
@@ -436,9 +437,9 @@ static auto loadMasterSlaves(const json &slavesArray, const json &services) noex
 
 static auto loadMaster(const json &master, const size_t masterIndex, const json &services) noexcept
     -> void {
-  const auto &masterRequiredAttributes = {MODEL_SERVICE_MASTER_ID_KEY,
-                                          MODEL_SERVICE_MASTER_SCHEDULER_KEY,
-                                          MODEL_SERVICE_MASTER_SLAVES_KEY};
+  const auto &masterRequiredAttributes = {
+      MODEL_SERVICE_MASTER_ID_KEY, MODEL_SERVICE_MASTER_SCHEDULER_KEY,
+      MODEL_SERVICE_MASTER_SLAVES_KEY, MODEL_SERVICE_MASTER_ISDYNAMIC_KEY};
 
   // Checks if the current master specification has all the required attributes.
   for (const auto &attribute : masterRequiredAttributes)
@@ -468,7 +469,11 @@ static auto loadMaster(const json &master, const size_t masterIndex, const json 
 
 
   // Register the master.
-  ispd::this_model::registerMaster(id, std::move(slaves), scheduler, workload, filePath);
+  bool is_dynamic = master[MODEL_SERVICE_MASTER_ISDYNAMIC_KEY];
+
+  // Register the master.
+  ispd::this_model::registerMaster(id, std::move(slaves), scheduler, workload,
+                                   is_dynamic, filePath);
   registerGidToType(id, LogicalProcessType::MASTER);
 
   ispd_debug("Master listed at %lu with identifier %lu has been loaded from "

@@ -36,7 +36,7 @@ struct MachineMetrics final {
   double m_EnergyConsumption; ///< Total energy consumpttion (in Joules).
 
   /// \name Finish-related Metrics.
-  ///  
+  ///
   /// Note: These metrics is only calculated at the `finish` event handler.
   ///       Therefore, it is not guaranteed to have the right value
   ///       while the simulation is being executed.

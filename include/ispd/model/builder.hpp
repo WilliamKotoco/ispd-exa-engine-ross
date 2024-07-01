@@ -33,7 +33,7 @@ public:
 
   void registerMaster(const tw_lpid gid, std::vector<ispd::services::slaves> &&slaves,
                       ispd::scheduler::Scheduler *const scheduler,
-                      ispd::workload::Workload *const workload,std::string  filePath);
+                      ispd::workload::Workload *const workload, bool is_dynamic, std::string  filePath);
 
   void registerUser(const std::string &name,
                     const double energyConsumptionLimit);
@@ -91,7 +91,7 @@ void registerSwitch(const tw_lpid gid, const double bandwidth,
 
 void registerMaster(const tw_lpid gid, std::vector<ispd::services::slaves> &&slaves,
                     ispd::scheduler::Scheduler *const scheduler,
-                    ispd::workload::Workload *const workload, std::string  filePath);
+                    ispd::workload::Workload *const workload, bool is_dynamic, std::string  filePath);
 
 void registerUser(const std::string &name, const double energyConsumptionLimit);
 
