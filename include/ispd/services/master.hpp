@@ -90,6 +90,7 @@ struct master {
                lp->gid, tw_now(lp), msg->type);
 
     switch (msg->type) {
+    case message_type::FEEDBACK:
     case message_type::GENERATE:
       generate(s, bf, msg, lp);
       break;
@@ -110,6 +111,7 @@ struct master {
                lp->gid, tw_now(lp), msg->type);
 
     switch (msg->type) {
+    case message_type::FEEDBACK:
     case message_type::GENERATE:
       generate_rc(s, bf, msg, lp);
       break;
@@ -282,7 +284,7 @@ private:
       tw_event *const e = tw_event_new(lp->gid, g_tw_lookahead + offset, lp);
       ispd_message *const m = static_cast<ispd_message *>(tw_event_data(e));
 
-      m->type = message_type::GENERATE;
+      m->type = message_type::FEEDBACK;
       m->machine_position = msg->machine_position;
       tw_event_send(e);
     }

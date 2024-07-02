@@ -22,7 +22,7 @@ public:
 
     /// if it is a feedback message, it is necessary to update
     /// the machine information
-    if (msg->type == message_type::ARRIVAL) {
+    if (msg->type == message_type::FEEDBACK) {
       slaves.at(msg->machine_position).runningTasks--;
     }
 
