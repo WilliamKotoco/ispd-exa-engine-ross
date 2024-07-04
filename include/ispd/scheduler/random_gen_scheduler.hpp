@@ -12,19 +12,27 @@ private:
   FileInterpreter scheduler;
 
 public:
-  void initScheduler(std::string file_name) override {
+  void initScheduler(std::vector<ispd::services::slaves> &slaves,
+                     std::string file_name) override {
     scheduler = readSchedulerFile(file_name);
   }
 
-  [[nodiscard]] tw_lpid
-  forwardSchedule(std::vector<ispd::services::slaves> &slaves, tw_bf *bf,
-                  ispd_message *msg, tw_lp *lp) override {
+  void updateInformation(std::vector<ispd::services::slaves> &slaves, tw_bf *bf,
+                         ispd_message *msg, tw_lp *lp) override {
 
     /// if it is a feedback message, it is necessary to update
     /// the machine information
-    if (msg->type == message_type::FEEDBACK) {
-      slaves.at(msg->machine_position).runningTasks--;
-    }
+    slaves.at(msg->machine_position).runningTasks--;
+  }
+
+  void reverseUpdate(std::vector<ispd::services::slaves> &slaves, tw_bf *bf,
+                     ispd_message *msg, tw_lp *lp) override {
+    slaves.at(msg->machine_position).runningTasks++;
+    return;
+  }
+  [[nodiscard]] tw_lpid
+  forwardSchedule(std::vector<ispd::services::slaves> &slaves, tw_bf *bf,
+                  ispd_message *msg, tw_lp *lp) override {
 
     long pos;
 
@@ -43,11 +51,6 @@ public:
 
   void reverseSchedule(std::vector<ispd::services::slaves> &slaves, tw_bf *bf,
                        ispd_message *msg, tw_lp *lp) override {
-    if (msg->type == message_type::ARRIVAL) {
-      slaves.at(msg->machine_position).runningTasks++;
-
-      slaves.at(msg->machine_position).runningMflops += msg->task.m_ProcSize;
-    }
 
     tw_rand_reverse_unif(lp->rng);
   }

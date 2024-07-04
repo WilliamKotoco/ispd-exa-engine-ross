@@ -6,11 +6,12 @@ namespace ispd {
 namespace services {
 struct slaves {
   tw_lpid id;
+  unsigned position;
   unsigned cpuCoreCount;
   double powerPerCore;
   unsigned gpuCoreCount;
   double gpuPowerPerCore;
-  unsigned runningTasks;
+  int runningTasks;
   double runningMflops;
 
   float priority; /// numerical value that represents the priority over other

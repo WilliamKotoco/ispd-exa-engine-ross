@@ -45,7 +45,7 @@ struct master {
     service_initializer(s);
 
     /// Initialize the scheduler.
-    s->scheduler->initScheduler(s->file_path);
+    s->scheduler->initScheduler(s->slaves, s->file_path);
 
     const uint32_t registered_routes_count =
         ispd::routing_table::countRoutes(lp->gid);
@@ -170,6 +170,16 @@ private:
     const auto start = std::chrono::high_resolution_clock::now();
 #endif // DEBUG_ON
 
+    if (msg->type == message_type::FEEDBACK) {
+      /// update the success of the previous resource execution
+      s->scheduler->updateInformation(s->slaves, bf, msg, lp);
+    }
+
+    /// Use the master's workload generator for generate the task's
+    /// processing and communication sizes.
+    s->workload->generateWorkload(lp->rng, msg->task.m_ProcSize,
+                                  msg->task.m_CommSize);
+
     /// Use the master's scheduling policy to the schedule the next slave.
     const tw_lpid scheduled_slave_id =
         s->scheduler->forwardSchedule(s->slaves, bf, msg, lp);
@@ -186,12 +196,9 @@ private:
 
     m->type = message_type::ARRIVAL;
 
-    /// Use the master's workload generator for generate the task's
-    /// processing and communication sizes.
-    s->workload->generateWorkload(lp->rng, m->task.m_ProcSize,
-                                  m->task.m_CommSize);
-
     m->task.m_Offload = s->workload->getComputingOffload();
+    m->task.m_ProcSize = msg->task.m_ProcSize;
+    m->task.m_CommSize = msg->task.m_CommSize;
 
     /// Task information specification.
     m->task.m_Origin = lp->gid;
@@ -240,6 +247,10 @@ private:
     const auto start = std::chrono::high_resolution_clock::now();
 #endif // DEBUG_ON
 
+    if (msg->type == message_type::FEEDBACK) {
+      /// update the success of the previous resource execution
+      s->scheduler->reverseUpdate(s->slaves, bf, msg, lp);
+    }
     /// Reverse the schedule.
     s->scheduler->reverseSchedule(s->slaves, bf, msg, lp);
 

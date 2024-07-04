@@ -13,6 +13,7 @@
 #include <ispd/model_loader/model_loader.hpp>
 #include <ispd/model_loader/scheduler_loader.hpp>
 #include <ispd/scheduler/random_gen_scheduler.hpp>
+#include <ispd/scheduler/fifo_gen_scheduler.hpp>
 /// \brief User - Keys.
 #define MODEL_USERS_SECTION ("users")
 #define MODEL_USER_NAME_KEY ("name")
@@ -398,6 +399,11 @@ static auto loadMasterScheduler(const json &type) noexcept
 
     if (scheduler.type == RANDOM) {
       return new ispd::scheduler::Random;
+    } else if (scheduler.type == FIFO) {
+      if (scheduler.isDynamic == false) {
+        ispd_error("FIFO scheduler must be dynamic");
+      }
+      return new ispd::scheduler::FIFO;
     }
 
     return nullptr;
@@ -427,6 +433,7 @@ static auto loadMasterSlaves(const json &slavesArray,
         machine[MODEL_SERVICE_MACHINE_GPUPOWER_KEY].get<double>();
     slave.runningTasks = 0;
     slave.runningMflops = 0.0;
+    slave.position = i;
     slave.priority = 0.0;
     slaves.push_back(slave);
     i++;

@@ -30,10 +30,20 @@ private:
   std::vector<tw_lpid>::size_type m_NextSlaveIndex;
 
 public:
-  void initScheduler(std::string file_path) override {
+  void initScheduler(std::vector<ispd::services::slaves> &slaves,
+                     std::string file_path) override {
     m_NextSlaveIndex = std::vector<tw_lpid>::size_type{0};
   }
 
+  void updateInformation(std::vector<ispd::services::slaves> &slaves, tw_bf *bf,
+                         ispd_message *msg, tw_lp *lp) override {
+    return;
+  }
+
+  void reverseUpdate(std::vector<ispd::services::slaves> &slaves, tw_bf *bf,
+                     ispd_message *msg, tw_lp *lp) override {
+    return;
+  }
   [[nodiscard]] tw_lpid
   forwardSchedule(std::vector<ispd::services::slaves> &slaves, tw_bf *bf,
                   ispd_message *msg, tw_lp *lp) override {

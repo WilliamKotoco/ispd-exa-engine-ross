@@ -26,7 +26,37 @@ public:
   /// This method is responsible for initializing any necessary data structures
   /// or state required by the scheduler before scheduling tasks.
   ///
-  virtual void initScheduler(std::string file_path) = 0;
+  virtual void initScheduler(std::vector<ispd::services::slaves> &slaves,
+                             std::string file_path) = 0;
+
+  /// \brief Updates scheduler's information after receiving a feedback
+  ///
+  /// Method used to update information about the state of the arrived machine
+  /// before forwarding the scheduling.
+  /// \param slaves A vector containing the identifiers of the simulation
+  ///               entities to be scheduled.
+  /// \param bf A pointer to the bitfield associated with the simulation
+  ///           entities.
+  /// \param msg A pointer to the message associated with the scheduling
+  ///          operation.
+  /// \param lp A pointer to the logical process performing the scheduling.
+  ///
+  virtual void updateInformation(std::vector<ispd::services::slaves> &slaves,
+                                 tw_bf *bf, ispd_message *msg, tw_lp *lp) = 0;
+
+  /// \brief Reverse computation for the updateInformation
+  ///
+  /// Method used to revert the operated update in the machine state.
+  /// \param slaves A vector containing the identifiers of the simulation
+  ///               entities to be scheduled.
+  /// \param bf A pointer to the bitfield associated with the simulation
+  ///           entities.
+  /// \param msg A pointer to the message associated with the scheduling
+  ///          operation.
+  /// \param lp A pointer to the logical process performing the scheduling.
+
+  virtual void reverseUpdate(std::vector<ispd::services::slaves> &slaves,
+                             tw_bf *bf, ispd_message *msg, tw_lp *lp) = 0;
 
   /// \brief Performs forward scheduling of tasks.
   ///
