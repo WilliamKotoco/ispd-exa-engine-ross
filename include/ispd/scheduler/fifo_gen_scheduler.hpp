@@ -61,24 +61,26 @@ public:
 
   void reverseUpdate(std::vector<ispd::services::slaves> &slaves, tw_bf *bf,
                      ispd_message *msg, tw_lp *lp) override {
-    slaves.at(msg->machine_position).runningTasks++;
-    slaves.at(msg->machine_position).runningMflops += msg->task.m_ProcSize;
-
-    if (slaves.at(msg->machine_position).runningTasks > scheduler.restriction)
-      machines.pop();
+//    slaves.at(msg->machine_position).runningTasks++;
+//    slaves.at(msg->machine_position).runningMflops += msg->task.m_ProcSize;
+//
+//    if (slaves.at(msg->machine_position).runningTasks > scheduler.restriction)
+//      machines.pop();
   }
 
   void reverseSchedule(std::vector<ispd::services::slaves> &slaves, tw_bf *bf,
                        ispd_message *msg, tw_lp *lp) override {
 
-    unsigned previous = msg->machine_position;
-    slaves.at(previous).runningTasks--;
-    slaves.at(previous).runningMflops -= msg->task.m_ProcSize;
+//    unsigned previous = msg->machine_position;
+//    slaves.at(previous).runningTasks--;
+//    slaves.at(previous).runningMflops -= msg->task.m_ProcSize;
+//
+//    if (bf->c0 == 1) {
+//      bf->c0 = 0;
+//      machines.push(previous);
+//    }
 
-    if (bf->c0 == 1) {
-      bf->c0 = 0;
-      machines.push(previous);
-    }
+      ispd_error("distributed execution not allowed for FIFO yet");
   }
 };
 
