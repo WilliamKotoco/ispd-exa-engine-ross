@@ -14,6 +14,8 @@
 #include <ispd/model_loader/scheduler_loader.hpp>
 #include <ispd/scheduler/random_gen_scheduler.hpp>
 #include <ispd/scheduler/fifo_gen_scheduler.hpp>
+#include <ispd/scheduler/increasing_gen_scheduler.hpp>
+
 /// \brief User - Keys.
 #define MODEL_USERS_SECTION ("users")
 #define MODEL_USER_NAME_KEY ("name")
@@ -404,8 +406,9 @@ static auto loadMasterScheduler(const json &type) noexcept
         ispd_error("FIFO scheduler must be dynamic");
       }
       return new ispd::scheduler::FIFO;
+    } else if (scheduler.type == INCREASING) {
+      return new ispd::scheduler::Increasing;
     }
-
     return nullptr;
     //    ispd_error("Unexepected %s scheduler.",
     //    type.get<std::string>().c_str());

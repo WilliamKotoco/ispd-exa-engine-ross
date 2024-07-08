@@ -32,6 +32,9 @@ SET(ispd_srcs
   # Workload-related files.
   ./src/workload/workload.cpp
   ./src/workload/interarrival.cpp
+
+        ./include/tinyexpr/tinyexpr.c
+
 )
 
 # Add the -g flag to the CMAKE_CXX_FLAGS variable
