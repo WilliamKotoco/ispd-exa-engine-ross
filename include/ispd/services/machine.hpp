@@ -110,6 +110,7 @@ struct machine {
           0; /// The task's results will be sent back to the master.
       m->route_offset = msg->route_offset - 2;
       m->previous_service_id = lp->gid;
+      m->machine_position = msg->machine_position;
 
       /// Save information (for reverse computation).
       msg->saved_core_index = core_index;

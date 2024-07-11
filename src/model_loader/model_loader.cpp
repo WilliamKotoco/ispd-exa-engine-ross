@@ -15,7 +15,7 @@
 #include <ispd/scheduler/random_gen_scheduler.hpp>
 #include <ispd/scheduler/fifo_gen_scheduler.hpp>
 #include <ispd/scheduler/increasing_gen_scheduler.hpp>
-
+#include <ispd/scheduler/decreasing_gen_scheduler.hpp>
 /// \brief User - Keys.
 #define MODEL_USERS_SECTION ("users")
 #define MODEL_USER_NAME_KEY ("name")
@@ -408,10 +408,13 @@ static auto loadMasterScheduler(const json &type) noexcept
       return new ispd::scheduler::FIFO;
     } else if (scheduler.type == INCREASING) {
       return new ispd::scheduler::Increasing;
+    } else if (scheduler.type == DECREASING) {
+      return new ispd::scheduler::Decreasing;
+    } else {
+
+      ispd_error("Unexepected %s scheduler.", type.get<std::string>().c_str());
     }
     return nullptr;
-    //    ispd_error("Unexepected %s scheduler.",
-    //    type.get<std::string>().c_str());
   }
   return nullptr;
 }

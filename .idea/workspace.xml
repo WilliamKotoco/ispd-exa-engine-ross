@@ -17,10 +17,13 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="8e603647-5bbb-4648-903a-8c0acf7adac3" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/include/ispd/scheduler/increasing_gen_scheduler.hpp" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/include/ispd/scheduler/decreasing_gen_scheduler.hpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/CMakeLists.txt" beforeDir="false" afterPath="$PROJECT_DIR$/CMakeLists.txt" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/include/ispd/scheduler/fifo_gen_scheduler.hpp" beforeDir="false" afterPath="$PROJECT_DIR$/include/ispd/scheduler/fifo_gen_scheduler.hpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/include/ispd/scheduler/increasing_gen_scheduler.hpp" beforeDir="false" afterPath="$PROJECT_DIR$/include/ispd/scheduler/increasing_gen_scheduler.hpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/include/ispd/services/machine.hpp" beforeDir="false" afterPath="$PROJECT_DIR$/include/ispd/services/machine.hpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/include/ispd/services/master.hpp" beforeDir="false" afterPath="$PROJECT_DIR$/include/ispd/services/master.hpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/include/ispd/services/slaves.hpp" beforeDir="false" afterPath="$PROJECT_DIR$/include/ispd/services/slaves.hpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/model_loader/model_loader.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/model_loader/model_loader.cpp" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -34,10 +37,13 @@
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
-  <component name="ProjectColorInfo"><![CDATA[{
-  "customColor": "",
-  "associatedIndex": 7
-}]]></component>
+  <component name="HighlightingSettingsPerFile">
+    <setting file="file:///usr/local/include/ross-types.h" root0="FORCE_HIGHLIGHTING" />
+  </component>
+  <component name="ProjectColorInfo">{
+  &quot;customColor&quot;: &quot;&quot;,
+  &quot;associatedIndex&quot;: 7
+}</component>
   <component name="ProjectId" id="2iySqMPrSyRCshwl8EM7dNNoS1N" />
   <component name="ProjectViewState">
     <option name="hideEmptyMiddlePackages" value="true" />
@@ -59,6 +65,7 @@
     &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
     &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
     &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;reference.settingsdialog.IDE.editor.colors&quot;,
     &quot;structure.view.defaults.are.configured&quot;: &quot;true&quot;,
     &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
   }
@@ -84,11 +91,19 @@
       <workItem from="1719862691849" duration="6146000" />
       <workItem from="1719921732135" duration="3929000" />
       <workItem from="1720109545758" duration="6183000" />
-      <workItem from="1720461521057" duration="3178000" />
+      <workItem from="1720461521057" duration="4015000" />
+      <workItem from="1720538779403" duration="6700000" />
+      <workItem from="1720547296916" duration="2813000" />
+      <workItem from="1720654905178" duration="4625000" />
+      <workItem from="1720695447409" duration="4000" />
     </task>
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
     <option name="version" value="3" />
+  </component>
+  <component name="XSLT-Support.FileAssociations.UIState">
+    <expand />
+    <select />
   </component>
 </project>

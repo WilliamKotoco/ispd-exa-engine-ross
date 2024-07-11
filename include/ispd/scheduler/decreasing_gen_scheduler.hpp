@@ -9,17 +9,17 @@
 
 namespace ispd::scheduler {
 
-struct compare_machine_inc {
+struct compare_machine_dec {
   bool operator()(const ispd::services::slaves &lhs,
                   const ispd::services::slaves &rhs) const {
-    return lhs.priority > rhs.priority;
+    return lhs.priority < rhs.priority;
   }
 };
 
-class Increasing final : public Scheduler {
+class Decreasing final : public Scheduler {
 private:
   FileInterpreter scheduler;
-  std::set<ispd::services::slaves, compare_machine_inc>
+  std::set<ispd::services::slaves, compare_machine_dec>
       queue;     /// priority queue
   te_expr *expr; /// expression to evaluate the formula
 
@@ -82,10 +82,8 @@ public:
                   ispd_message *msg, tw_lp *lp) override {
 
     int position = queue.cbegin()->position;
-
     tw_lpid machine = slaves.at(position).id;
 
-    //      ispd_error("%lu ", machine);
     slaves.at(position).runningTasks++;
     slaves.at(position).runningMflops += msg->task.m_ProcSize;
     /// removes from queue if there are more running tasks than the restriction
@@ -96,12 +94,12 @@ public:
       queue.erase(queue.cbegin());
     }
 
+    ispd_debug("machine %lu", machine);
+
     /// recalculate priority and adds back in the queue if there is available
     /// space based on the arrived machine'
     if (slaves.at(msg->machine_position).runningTasks < scheduler.restriction &&
         scheduler.restriction != -1 && msg->type == message_type::FEEDBACK) {
-      ispd_debug("Running tasks: %d ",
-                 slaves.at(msg->machine_position).runningTasks);
 
       slaves.at(msg->machine_position).priority =
           eval(slaves.at(msg->machine_position), msg->task.m_ProcSize,

@@ -6,7 +6,7 @@ namespace ispd {
 namespace services {
 struct slaves {
   tw_lpid id;
-  unsigned position;
+  int position;
   unsigned cpuCoreCount;
   double powerPerCore;
   unsigned gpuCoreCount;

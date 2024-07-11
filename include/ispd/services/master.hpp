@@ -213,7 +213,6 @@ private:
     m->machine_position = msg->machine_position;
 
     tw_event_send(e);
-
     /// Checks if the there are more remaining tasks to be generated. If so, a
     /// generate message is sent to the master by itself to generate a new task.
     if (!s->dynamic && s->workload->getRemainingTasks() > 0) {
@@ -276,6 +275,8 @@ private:
 
   static void arrival(master_state *s, tw_bf *bf, ispd_message *msg,
                       tw_lp *lp) {
+    ispd_debug("[Arrival] Message of arrival came from %lu",
+               msg->previous_service_id);
     /// Calculate the end time of the task.
     msg->task.m_EndTime = tw_now(lp);
 
