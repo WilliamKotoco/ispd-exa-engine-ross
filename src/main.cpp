@@ -22,7 +22,8 @@ static unsigned g_star_task_amount = 100;
 tw_peid mapping(tw_lpid gid) { return (tw_peid)gid / g_tw_nlp; }
 
 tw_lptype lps_type[] = {
-    {(init_f)ispd::services::master::init, (pre_run_f)NULL,
+    {(init_f)ispd::services::master::init,
+     (pre_run_f)ispd::services::master::pre_run,
      (event_f)ispd::services::master::forward,
      (revent_f)ispd::services::master::reverse,
      (commit_f)ispd::services::master::commit,

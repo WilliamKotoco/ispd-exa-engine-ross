@@ -84,6 +84,39 @@ struct master {
     ispd_debug("Master %lu has been initialized.", lp->gid);
   }
 
+  static void pre_run(master_state *s, tw_lp *lp) {
+    if (s->dynamic) {
+      for (auto &i : s->slaves) {
+
+        const ispd::routing::Route *route =
+            ispd::routing_table::getRoute(lp->gid, i.id);
+
+        /// @TODO is necessary the offset ?
+        tw_event *const e = tw_event_new(route->get(0), g_tw_lookahead, lp);
+        ispd_message *const m = static_cast<ispd_message *>(tw_event_data(e));
+
+        m->type = message_type::ARRIVAL;
+        s->workload->generateWorkload(lp->rng, m->task.m_ProcSize,
+                                      m->task.m_CommSize);
+
+        m->task.m_Offload = s->workload->getComputingOffload();
+
+        /// Task information specification.
+        m->task.m_Origin = lp->gid;
+        m->task.m_Dest = i.id;
+        m->task.m_SubmitTime = tw_now(lp);
+        m->task.m_Owner = s->workload->getOwner();
+
+        m->route_offset = 1;
+        m->previous_service_id = lp->gid;
+        m->downward_direction = 1;
+        m->task_processed = 0;
+        m->machine_position = i.position;
+
+        tw_event_send(e);
+      }
+    }
+  }
   static void forward(master_state *s, tw_bf *bf, ispd_message *msg,
                       tw_lp *lp) {
     ispd_debug("[Forward] Master %lu received a message at %lf of type (%d).",
@@ -288,6 +321,10 @@ private:
     s->metrics.total_turnaround_time += turnaround_time;
 
     if (s->dynamic && s->workload->getRemainingTasks() > 0) {
+
+      if (s->workload->getRemainingTasks() == -1) {
+        ispd_error("here %d %d", s->workload->getRemainingTasks(), s->dynamic);
+      }
       double offset;
 
       s->workload->generateInterarrival(lp->rng, offset);

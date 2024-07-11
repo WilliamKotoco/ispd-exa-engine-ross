@@ -41,7 +41,7 @@ protected:
   /// the simulation. This information allows simulation components to keep
   /// track of the workload progress and workload generation termination
   /// conditions.
-  unsigned m_RemainingTasks;
+  int m_RemainingTasks;
 
   /// \brief Represents the computing offload as a percentage of a workload's
   ///        computing size that will be processed by the GPU.
@@ -175,7 +175,7 @@ public:
   ///       which stores the count of remaining tasks. It is used by simulation
   ///       components to monitor the progress of workload generation and
   ///       determine workload generation termination conditions.
-  [[nodiscard]] inline unsigned getRemainingTasks() const noexcept {
+  [[nodiscard]] inline int getRemainingTasks() const noexcept {
     return m_RemainingTasks;
   }
 
