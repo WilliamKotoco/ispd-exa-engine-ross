@@ -112,7 +112,6 @@ struct master {
         m->downward_direction = 1;
         m->task_processed = 0;
         m->machine_position = i.position;
-
         tw_event_send(e);
       }
     }
@@ -160,7 +159,8 @@ struct master {
   }
 
   static void commit(master_state *s, tw_bf *bf, ispd_message *msg, tw_lp *lp) {
-    if (msg->type == message_type::GENERATE) {
+    if (msg->type == message_type::GENERATE ||
+        msg->type == message_type::FEEDBACK) {
       auto &userMetrics =
           ispd::this_model::getUserById(msg->task.m_Owner).getMetrics();
 
@@ -198,12 +198,15 @@ private:
                        tw_lp *lp) {
     ispd_debug("Master %lu will generate a task at %lf, remaining %u.", lp->gid,
                tw_now(lp), s->workload->getRemainingTasks());
+    /// @TEMP
+    if (msg->type == message_type::GENERATE && s->dynamic)
+      return;
 
 #ifdef DEBUG_ON
     const auto start = std::chrono::high_resolution_clock::now();
 #endif // DEBUG_ON
-
     if (msg->type == message_type::FEEDBACK) {
+
       /// update the success of the previous resource execution
       s->scheduler->updateInformation(s->slaves, bf, msg, lp);
     }
@@ -258,7 +261,6 @@ private:
       ispd_message *const m = static_cast<ispd_message *>(tw_event_data(e));
 
       m->type = message_type::GENERATE;
-
       tw_event_send(e);
     }
 
@@ -322,9 +324,6 @@ private:
 
     if (s->dynamic && s->workload->getRemainingTasks() > 0) {
 
-      if (s->workload->getRemainingTasks() == -1) {
-        ispd_error("here %d %d", s->workload->getRemainingTasks(), s->dynamic);
-      }
       double offset;
 
       s->workload->generateInterarrival(lp->rng, offset);
@@ -335,6 +334,8 @@ private:
 
       m->type = message_type::FEEDBACK;
       m->machine_position = msg->machine_position;
+      m->task.m_ProcSize = msg->task.m_ProcSize;
+      m->task.m_CommSize = msg->task.m_CommSize;
       tw_event_send(e);
     }
   }

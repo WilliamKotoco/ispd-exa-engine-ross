@@ -16,6 +16,10 @@ struct slaves {
 
   float priority; /// numerical value that represents the priority over other
                   /// machines
+
+  bool operator==(const slaves &other) const {
+    return id == other.id; // Compare based on id
+  }
 };
 
 }; // namespace services
