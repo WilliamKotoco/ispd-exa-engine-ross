@@ -17,14 +17,9 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="8e603647-5bbb-4648-903a-8c0acf7adac3" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/include/ispd/scheduler/decreasing_gen_scheduler.hpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/include/ispd/scheduler/fifo_gen_scheduler.hpp" beforeDir="false" afterPath="$PROJECT_DIR$/include/ispd/scheduler/fifo_gen_scheduler.hpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/include/ispd/scheduler/decreasing_gen_scheduler.hpp" beforeDir="false" afterPath="$PROJECT_DIR$/include/ispd/scheduler/decreasing_gen_scheduler.hpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/include/ispd/scheduler/increasing_gen_scheduler.hpp" beforeDir="false" afterPath="$PROJECT_DIR$/include/ispd/scheduler/increasing_gen_scheduler.hpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/include/ispd/services/machine.hpp" beforeDir="false" afterPath="$PROJECT_DIR$/include/ispd/services/machine.hpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/include/ispd/services/master.hpp" beforeDir="false" afterPath="$PROJECT_DIR$/include/ispd/services/master.hpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/include/ispd/services/slaves.hpp" beforeDir="false" afterPath="$PROJECT_DIR$/include/ispd/services/slaves.hpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/model_loader/model_loader.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/model_loader/model_loader.cpp" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -71,9 +66,9 @@
   }
 }</component>
   <component name="RunManager">
-    <configuration default="true" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true">
+    <configuration default="true" type="CLionExternalRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true">
       <method v="2">
-        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+        <option name="CLION.EXTERNAL.BUILD" enabled="true" />
       </method>
     </configuration>
   </component>
@@ -96,6 +91,7 @@
       <workItem from="1720547296916" duration="2813000" />
       <workItem from="1720654905178" duration="4625000" />
       <workItem from="1720695447409" duration="4000" />
+      <workItem from="1721070816128" duration="6000" />
     </task>
     <servers />
   </component>

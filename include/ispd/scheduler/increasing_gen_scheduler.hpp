@@ -1,4 +1,5 @@
 #pragma once
+#include "ispd/log/log.hpp"
 #include <ross.h>
 #include <vector>
 #include <ispd/message/message.hpp>
@@ -22,28 +23,42 @@ private:
 
   double eval(ispd::services::slaves &slave, double TPS_, double TCS_,
               double TOFF_) {
-    int cpuCores = slave.cpuCoreCount;
-    double cpuPP = slave.powerPerCore;
-    int gpuCores = slave.gpuCoreCount;
-    double gpuPP = slave.gpuPowerPerCore;
-    double TPS = TPS_;
-    double TCS = TCS_;
-    double TOFF = TOFF_;
-    double RMFE = slave.runningMflops;
 
-    te_variable vars[] = {{"cpuCores", &cpuCores}, {"cpuPP", &cpuPP},
-                          {"gpuCores", &gpuCores}, {"gpuPP", &gpuPP},
-                          {"TPS", &TPS},           {"TCS", &TCS},
-                          {"TOFF", &TOFF},         {"RMFE", &RMFE}};
+    static int cpuCores = slave.cpuCoreCount;
+    static double cpuPP = slave.powerPerCore;
+    static int gpuCores = slave.gpuCoreCount;
+    static double gpuPP = slave.gpuPowerPerCore;
+    static double TPS = TPS_;
+    static double TCS = TCS_;
+    static double TOFF = TOFF_;
+    static double RMFE = slave.runningMflops;
+
+    /// this is necessary because the library tiny_expr uses the variable
+    /// addresses to compile the expression
+    cpuCores = slave.cpuCoreCount;
+    cpuPP = slave.powerPerCore;
+    gpuCores = slave.gpuCoreCount;
+    gpuPP = slave.gpuPowerPerCore;
+    TPS = TPS_;
+    TCS = TCS_;
+    TOFF = TOFF_;
+    RMFE = slave.runningMflops;
+
     int err;
     /// if there are no expression, creates the expression from the scheduler
     /// formula and evaluates.
+
     if (!this->expr) {
+
+      te_variable vars[] = {{"cpuCores", &cpuCores}, {"cpuPP", &cpuPP},
+                            {"gpuCores", &gpuCores}, {"gpuPP", &gpuPP},
+                            {"TPS", &TPS},           {"TCS", &TCS},
+                            {"TOFF", &TOFF},         {"RMFE", &RMFE}};
+
       const char *c = scheduler.formula.c_str();
       this->expr = te_compile(c, vars, 8, &err);
 
       if (this->expr) {
-
         return te_eval(this->expr);
       } else {
         ispd_error("error at %d with formula ", err, scheduler.formula.c_str());
@@ -69,8 +84,6 @@ public:
     }
 
     std::sort(queue.begin(), queue.end(), compare);
-
-
   }
 
   void updateInformation(std::vector<ispd::services::slaves> &slaves, tw_bf *bf,
@@ -98,9 +111,18 @@ public:
 
     tw_lpid machine = slaves.at(position).id;
 
+    ispd_debug("Chosen machine %lu", slaves.at(position).id);
+
     //      ispd_error("%lu ", machine);
     slaves.at(position).runningTasks++;
     slaves.at(position).runningMflops += msg->task.m_ProcSize;
+
+    /// revaluate priority
+    slaves.at(position).priority =
+        eval(slaves.at(position), msg->task.m_ProcSize, msg->task.m_CommSize,
+             msg->task.m_Offload);
+
+    queue.begin()->priority = slaves.at(position).priority;
     /// removes from queue if there are more running tasks than the restriction
     /// allows
     if (slaves.at(position).runningTasks >= scheduler.restriction &&
@@ -115,6 +137,7 @@ public:
         scheduler.restriction != -1 && msg->type == message_type::FEEDBACK) {
       ispd_debug("Adding back machine %lu",
                  slaves.at(msg->machine_position).id);
+
       slaves.at(msg->machine_position).priority =
           eval(slaves.at(msg->machine_position), msg->task.m_ProcSize,
                msg->task.m_CommSize, msg->task.m_Offload);
@@ -122,14 +145,15 @@ public:
       ispd::services::slaves target = slaves.at(msg->machine_position);
 
       auto it = std::find(queue.begin(), queue.end(), target);
+
       if (it != queue.end()) {
+        ispd_debug("%lu %lu", target.id, it->id);
         queue.erase(it);
       }
       queue.push_back(slaves.at(msg->machine_position));
-      std::sort(queue.begin(), queue.end(), compare);
     }
 
-
+    std::sort(queue.begin(), queue.end(), compare);
     msg->machine_position = position;
 
     return machine;

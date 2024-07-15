@@ -14,8 +14,8 @@ struct slaves {
   int runningTasks;
   double runningMflops;
 
-  float priority; /// numerical value that represents the priority over other
-                  /// machines
+  double priority; /// numerical value that represents the priority over other
+                   /// machines
 
   bool operator==(const slaves &other) const {
     return id == other.id; // Compare based on id

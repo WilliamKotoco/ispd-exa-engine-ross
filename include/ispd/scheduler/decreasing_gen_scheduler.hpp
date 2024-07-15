@@ -1,4 +1,5 @@
 #pragma once
+#include "ispd/log/log.hpp"
 #include <ross.h>
 #include <vector>
 #include <ispd/message/message.hpp>
@@ -9,141 +10,164 @@
 
 namespace ispd::scheduler {
 
-    bool compare_dec(const ispd::services::slaves &lhs,
+bool compare_dec(const ispd::services::slaves &lhs,
                  const ispd::services::slaves &rhs) {
-        return lhs.priority < rhs.priority;
+  return lhs.priority < rhs.priority;
+}
+
+class Decreasing final : public Scheduler {
+private:
+  FileInterpreter scheduler;
+  std::vector<ispd::services::slaves> queue; /// priority queue
+  te_expr *expr = nullptr; /// expression to evaluate the formula
+
+  double eval(ispd::services::slaves &slave, double TPS_, double TCS_,
+              double TOFF_) {
+
+    static int cpuCores = slave.cpuCoreCount;
+    static double cpuPP = slave.powerPerCore;
+    static int gpuCores = slave.gpuCoreCount;
+    static double gpuPP = slave.gpuPowerPerCore;
+    static double TPS = TPS_;
+    static double TCS = TCS_;
+    static double TOFF = TOFF_;
+    static double RMFE = slave.runningMflops;
+
+    /// this is necessary because the library tiny_expr uses the variable
+    /// addresses to compile the expression
+    cpuCores = slave.cpuCoreCount;
+    cpuPP = slave.powerPerCore;
+    gpuCores = slave.gpuCoreCount;
+    gpuPP = slave.gpuPowerPerCore;
+    TPS = TPS_;
+    TCS = TCS_;
+    TOFF = TOFF_;
+    RMFE = slave.runningMflops;
+
+    int err;
+    /// if there are no expression, creates the expression from the scheduler
+    /// formula and evaluates.
+
+    if (!this->expr) {
+
+      te_variable vars[] = {{"cpuCores", &cpuCores}, {"cpuPP", &cpuPP},
+                            {"gpuCores", &gpuCores}, {"gpuPP", &gpuPP},
+                            {"TPS", &TPS},           {"TCS", &TCS},
+                            {"TOFF", &TOFF},         {"RMFE", &RMFE}};
+
+      const char *c = scheduler.formula.c_str();
+      this->expr = te_compile(c, vars, 8, &err);
+
+      if (this->expr) {
+        return te_eval(this->expr);
+      } else {
+        ispd_error("error at %d with formula ", err, scheduler.formula.c_str());
+      }
+
+      /// expression were already created, return the evaluation using it.
+    } else
+      return te_eval(this->expr);
+
+    return 0;
+  }
+
+public:
+  void initScheduler(std::vector<ispd::services::slaves> &slaves,
+                     std::string file_name) override {
+
+    scheduler = readSchedulerFile(file_name);
+    std::cout << expr;
+    for (auto &i : slaves) {
+      i.priority = eval(
+          i, 1, 1, 0); /// the first evaluation does not use task information
+      queue.push_back(i);
     }
 
-    class Decreasing final : public Scheduler {
-    private:
-        FileInterpreter scheduler;
-        std::vector<ispd::services::slaves> queue; /// priority queue
-        te_expr *expr = nullptr; /// expression to evaluate the formula
+    std::sort(queue.begin(), queue.end(), compare_dec);
+  }
 
-        double eval(ispd::services::slaves &slave, double TPS_, double TCS_,
-                    double TOFF_) {
-            int cpuCores = slave.cpuCoreCount;
-            double cpuPP = slave.powerPerCore;
-            int gpuCores = slave.gpuCoreCount;
-            double gpuPP = slave.gpuPowerPerCore;
-            double TPS = TPS_;
-            double TCS = TCS_;
-            double TOFF = TOFF_;
-            double RMFE = slave.runningMflops;
+  void updateInformation(std::vector<ispd::services::slaves> &slaves, tw_bf *bf,
+                         ispd_message *msg, tw_lp *lp) override {
+    ispd_debug("[Update] Updated machine %lu was running %d tasks",
+               slaves.at(msg->machine_position).id,
+               slaves.at(msg->machine_position).runningTasks);
 
-            te_variable vars[] = {{"cpuCores", &cpuCores}, {"cpuPP", &cpuPP},
-                                  {"gpuCores", &gpuCores}, {"gpuPP", &gpuPP},
-                                  {"TPS", &TPS},           {"TCS", &TCS},
-                                  {"TOFF", &TOFF},         {"RMFE", &RMFE}};
-            int err;
-            /// if there are no expression, creates the expression from the scheduler
-            /// formula and evaluates.
-            if (!this->expr) {
-                const char *c = scheduler.formula.c_str();
-                this->expr = te_compile(c, vars, 8, &err);
+    /// @TEMP
+    if (slaves.at(msg->machine_position).runningTasks == 0)
+      return;
+    slaves.at(msg->machine_position).runningTasks--;
+    slaves.at(msg->machine_position).runningMflops -= msg->task.m_ProcSize;
+    ispd_debug("[Update] Updated machine %lu now running %d tasks",
+               slaves.at(msg->machine_position).id,
+               slaves.at(msg->machine_position).runningTasks);
+  }
 
-                if (this->expr) {
+  [[nodiscard]] tw_lpid
+  forwardSchedule(std::vector<ispd::services::slaves> &slaves, tw_bf *bf,
+                  ispd_message *msg, tw_lp *lp) override {
+    ispd_debug("Queue size %d", queue.size());
 
-                    return te_eval(this->expr);
-                } else {
-                    ispd_error("error at %d with formula ", err, scheduler.formula.c_str());
-                }
+    int position = queue.cbegin()->position;
 
-                /// expression were already created, return the evaluation using it.
-            } else
-                return te_eval(this->expr);
+    tw_lpid machine = slaves.at(position).id;
 
-            return 0;
-        }
+    ispd_debug("Chosen machine %lu", slaves.at(position).id);
 
-    public:
-        void initScheduler(std::vector<ispd::services::slaves> &slaves,
-                           std::string file_name) override {
+    //      ispd_error("%lu ", machine);
+    slaves.at(position).runningTasks++;
+    slaves.at(position).runningMflops += msg->task.m_ProcSize;
 
-            scheduler = readSchedulerFile(file_name);
-            std::cout << expr;
-            for (auto &i : slaves) {
-                i.priority = eval(
-                        i, 1, 1, 0); /// the first evaluation does not use task information
-                queue.push_back(i);
-            }
+    /// revaluate priority
+    slaves.at(position).priority =
+        eval(slaves.at(position), msg->task.m_ProcSize, msg->task.m_CommSize,
+             msg->task.m_Offload);
 
-            std::sort(queue.begin(), queue.end(), compare_dec);
+    queue.begin()->priority = slaves.at(position).priority;
+    /// removes from queue if there are more running tasks than the restriction
+    /// allows
+    if (slaves.at(position).runningTasks >= scheduler.restriction &&
+        scheduler.restriction != -1) {
+      ispd_debug("Removing machine %lu", slaves.at(position).id);
+      queue.erase(queue.cbegin());
+    }
 
+    /// recalculate priority and adds back in the queue if there is available
+    /// space based on the arrived machine'
+    if (slaves.at(msg->machine_position).runningTasks < scheduler.restriction &&
+        scheduler.restriction != -1 && msg->type == message_type::FEEDBACK) {
+      ispd_debug("Adding back machine %lu",
+                 slaves.at(msg->machine_position).id);
 
-        }
+      slaves.at(msg->machine_position).priority =
+          eval(slaves.at(msg->machine_position), msg->task.m_ProcSize,
+               msg->task.m_CommSize, msg->task.m_Offload);
 
-        void updateInformation(std::vector<ispd::services::slaves> &slaves, tw_bf *bf,
-                               ispd_message *msg, tw_lp *lp) override {
-            ispd_debug("[Update] Updated machine %lu was running %d tasks",
-                       slaves.at(msg->machine_position).id,
-                       slaves.at(msg->machine_position).runningTasks);
+      ispd::services::slaves target = slaves.at(msg->machine_position);
 
-            /// @TEMP
-            if (slaves.at(msg->machine_position).runningTasks == 0)
-                return;
-            slaves.at(msg->machine_position).runningTasks--;
-            slaves.at(msg->machine_position).runningMflops -= msg->task.m_ProcSize;
-            ispd_debug("[Update] Updated machine %lu now running %d tasks",
-                       slaves.at(msg->machine_position).id,
-                       slaves.at(msg->machine_position).runningTasks);
-        }
+      auto it = std::find(queue.begin(), queue.end(), target);
 
-        [[nodiscard]] tw_lpid
-        forwardSchedule(std::vector<ispd::services::slaves> &slaves, tw_bf *bf,
-                        ispd_message *msg, tw_lp *lp) override {
-            ispd_debug("Queue size %d", queue.size());
+      if (it != queue.end()) {
+        ispd_debug("%lu %lu", target.id, it->id);
+        queue.erase(it);
+      }
+      queue.push_back(slaves.at(msg->machine_position));
+    }
 
-            int position = queue.cbegin()->position;
+    std::sort(queue.begin(), queue.end(), compare_dec);
+    msg->machine_position = position;
 
-            tw_lpid machine = slaves.at(position).id;
+    return machine;
+  }
 
-            //      ispd_error("%lu ", machine);
-            slaves.at(position).runningTasks++;
-            slaves.at(position).runningMflops += msg->task.m_ProcSize;
-            /// removes from queue if there are more running tasks than the restriction
-            /// allows
-            if (slaves.at(position).runningTasks >= scheduler.restriction &&
-                scheduler.restriction != -1) {
-                ispd_debug("Removing machine %lu", slaves.at(position).id);
-                queue.erase(queue.cbegin());
-            }
+  void reverseUpdate(std::vector<ispd::services::slaves> &slaves, tw_bf *bf,
+                     ispd_message *msg, tw_lp *lp) override {
+    return;
+  }
 
-            /// recalculate priority and adds back in the queue if there is available
-            /// space based on the arrived machine'
-            if (slaves.at(msg->machine_position).runningTasks < scheduler.restriction &&
-                scheduler.restriction != -1 && msg->type == message_type::FEEDBACK) {
-                ispd_debug("Adding back machine %lu",
-                           slaves.at(msg->machine_position).id);
-                slaves.at(msg->machine_position).priority =
-                        eval(slaves.at(msg->machine_position), msg->task.m_ProcSize,
-                             msg->task.m_CommSize, msg->task.m_Offload);
-
-                ispd::services::slaves target = slaves.at(msg->machine_position);
-
-                auto it = std::find(queue.begin(), queue.end(), target);
-                if (it != queue.end()) {
-                    ispd_debug("%lu %lu", target.id, it->id);
-                    queue.erase(it);
-                }
-                queue.push_back(slaves.at(msg->machine_position));
-                std::sort(queue.begin(), queue.end(), compare_dec);
-            }
-
-            msg->machine_position = position;
-
-            return machine;
-        }
-
-        void reverseUpdate(std::vector<ispd::services::slaves> &slaves, tw_bf *bf,
-                           ispd_message *msg, tw_lp *lp) override {
-            return;
-        }
-
-        void reverseSchedule(std::vector<ispd::services::slaves> &slaves, tw_bf *bf,
-                             ispd_message *msg, tw_lp *lp) override {
-            return;
-        }
-    };
+  void reverseSchedule(std::vector<ispd::services::slaves> &slaves, tw_bf *bf,
+                       ispd_message *msg, tw_lp *lp) override {
+    return;
+  }
+};
 
 }; // namespace ispd::scheduler
