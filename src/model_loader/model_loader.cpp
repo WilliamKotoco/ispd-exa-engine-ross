@@ -374,9 +374,52 @@ static auto loadWorkloads(const json &data) noexcept -> void {
       ispd_debug("Constant Workload (%.2lf, %.2lf) for master "
                  "with id %lu has been loaded from the model specification.",
                  maxProcSize, maxCommSize, masterId.get<tw_lpid>());
-    } else {
-      ispd_error("Unexpected workload type %s.",
-                 type.get<std::string>().c_str());
+    } else { // then it is the file path
+
+      const auto minCommSize =
+          workload[MODEL_WORKLOAD_UNIFORM_MINCOMMSIZE_KEY].get<double>();
+
+      const auto maxCommSize =
+          workload[MODEL_WORKLOAD_UNIFORM_MAXCOMMSIZE_KEY].get<double>();
+
+      const auto computingOffload = workload[MODEL_WORKLOAD_COMPUTINGOFFLOAD_KEY].get<double>();
+
+      std::ifstream infile(type);
+
+      if (!infile.is_open()) {
+        ispd_error("File not found for workload trace \n");
+      }
+
+      std::string line;
+      std::vector<double> proc_size;
+      std::vector<double> sub_time;
+      int num_tasks = 0;
+
+      while (std::getline(infile, line)) {
+        std::istringstream iss(line);
+        double arrival;
+        double procSize;
+        int tmp;
+
+        iss >> tmp;
+        iss >> arrival;
+
+        iss >> tmp;
+
+        iss >> procSize;
+
+        proc_size.push_back(procSize);
+        sub_time.push_back(arrival);
+
+        num_tasks++;
+      }
+
+      infile.close();
+
+      // ispd_error("%d %lf %lf", num_tasks, proc_size[3], sub_time[3]);
+      w = new ispd::workload::TracesWorkload(owner, num_tasks, computingOffload,
+                                             minCommSize, maxCommSize,
+                                             proc_size, sub_time, 0);
     }
 
     // Register the workload in a temporary storage, because this will be

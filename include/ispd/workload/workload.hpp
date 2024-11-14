@@ -136,6 +136,7 @@ public:
   /// \param rng The logical process reversible-pseudorandom number generator.
   virtual void reverseGenerateWorkload(tw_rng_stream *rng) = 0;
 
+  virtual void generateInterarrival(tw_rng_stream *const rng, double &offset) = 0;
   /// \brief Generates the time until the next event's arrival using the
   /// interarrival distribution.
   ///
@@ -148,9 +149,9 @@ public:
   /// \param rng A pointer to the logical process reversible-pseudorandom number
   /// generator. \param offset A reference to a variable where the generated
   /// time offset will be stored.
-  inline void generateInterarrival(tw_rng_stream *const rng, double &offset) {
-    m_InterarrivalDist->generateInterarrival(rng, offset);
-  }
+  //inline void generateInterarrival(tw_rng_stream *const rng, double &offset) {
+    //m_InterarrivalDist->generateInterarrival(rng, offset);
+  //}
 
   /// \brief Reverses the generation of the last interarrival time, necessary
   /// due to the
@@ -279,6 +280,10 @@ public:
     Workload::m_RemainingTasks--;
   }
 
+  void generateInterarrival(tw_rng_stream *const rng, double &offset) override{
+    m_InterarrivalDist->generateInterarrival(rng, offset);
+  }
+
   /// \brief Reverse the constant workload generation, needed due to Time Warp's
   /// rollback mechanism.
   ///
@@ -365,7 +370,9 @@ public:
     ispd_debug("[Uniform Workload] Workload (%lf, %lf) generated. RT: %u.",
                procSize, commSize, Workload::m_RemainingTasks);
   }
-
+void generateInterarrival(tw_rng_stream *const rng, double &offset) override{
+    m_InterarrivalDist->generateInterarrival(rng, offset);
+  }
   /// \brief Reverse the uniform workload generation, needed due to Time Warp's
   /// rollback mechanism.
   ///
@@ -523,7 +530,9 @@ public:
         "[TwoStageUniform Workload] Workload (%lf, %lf) generated. RT: %u.",
         procSize, commSize, Workload::m_RemainingTasks);
   }
-
+void generateInterarrival(tw_rng_stream *const rng, double &offset) override{
+    m_InterarrivalDist->generateInterarrival(rng, offset);
+  }
   /// \brief Reverse the two-stage uniform workload generation, needed due to
   ///        Time Warp's rollback mechanism.
   ///
@@ -566,7 +575,60 @@ public:
                Workload::m_RemainingTasks);
   }
 };
+/// @brief  Trace workload built by reading a workload file
+class TracesWorkload final : public Workload {
 
+  double m_MinCommSize;
+  double m_MaxCommSize;
+
+  std::vector<double> m_proc_size;
+  std::vector<double> m_sub_time;
+
+  int m_next_task;
+
+public:
+  [[nodiscard]] explicit TracesWorkload(
+      const std::string &owner, const unsigned remainingTasks,
+      const double computingOffload, const double minCommSize,
+      const double maxCommSize,  std::vector<double> proc_size,
+      std::vector<double> sub_time, int next_task) noexcept;
+
+  void generateWorkload(tw_rng_stream *rng, double &procSize,
+                        double &commSize) override {
+    procSize = m_proc_size[m_next_task];
+    // sometimes the trace file is bug
+    if (procSize == -1)
+      procSize = 1;
+    commSize =
+        m_MinCommSize + tw_rand_unif(rng) * (m_MaxCommSize - m_MinCommSize);
+
+    Workload::m_RemainingTasks--;
+    m_next_task++;
+
+    ispd_debug("Remaining tasks: %d", Workload::m_RemainingTasks);
+  }
+void generateInterarrival(tw_rng_stream *const rng, double &offset) override{
+    if (m_next_task == 0)
+      offset = m_sub_time[m_next_task];
+    else
+      offset = m_sub_time[m_next_task] - m_sub_time[m_next_task-1];
+
+    if (offset <= 0)
+    {
+      offset = 1.0;
+    }
+
+  /// threshold 
+    if (offset > 1000)
+    {
+      offset = 1000;
+    }
+
+}
+  /// @brief  Traces not working for parallel
+  /// @param rng
+  void reverseGenerateWorkload(tw_rng_stream *rng) override { return; }
+};
 /// \brief Null Workload Class
 ///
 /// The NullWorkload class is a concrete implementation of the Workload
@@ -711,6 +773,10 @@ twoStage(const std::string &user, const unsigned remainingTasks,
          const TwoStageDistribution commDist,
          std::unique_ptr<InterarrivalDistribution> interarrivalDist);
 
+TracesWorkload *traces(const std::string &user, const unsigned remainingTasks,
+                       const double computingOffload, const double minCommSize,
+                       const double maxCommSize, std::vector<double> proc_size,
+                       std::vector<double> sub_time, int next_task);
 /// \brief Get Null Workload
 ///
 /// The `null()` function returns an instance of the `NullWorkload` class, which

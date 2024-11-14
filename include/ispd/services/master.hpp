@@ -12,6 +12,7 @@
 #include <ispd/workload/workload.hpp>
 #include <ispd/scheduler/scheduler.hpp>
 #include <ispd/scheduler/round_robin.hpp>
+
 #include <ispd/metrics/master_metrics.hpp>
 #include <ispd/services/slaves.hpp>
 namespace ispd {
@@ -255,7 +256,9 @@ private:
       double offset;
 
       s->workload->generateInterarrival(lp->rng, offset);
-
+      ispd_debug("Offset is %lf", offset);
+      if (offset > 1000)
+        offset = 100;
       /// Send a generate message to itself.
       tw_event *const e = tw_event_new(lp->gid, g_tw_lookahead + offset, lp);
       ispd_message *const m = static_cast<ispd_message *>(tw_event_data(e));

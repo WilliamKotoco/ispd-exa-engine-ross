@@ -82,6 +82,17 @@ namespace ispd::workload {
              remainingTasks);
 }
 
+[[nodiscard]] TracesWorkload::TracesWorkload(
+    const std::string &owner, const unsigned remainingTasks,
+    const double computingOffload, const double minCommSize,
+    const double maxCommSize, std::vector<double> proc_size,
+    std::vector<double> sub_time, int next_task) noexcept
+    : Workload(owner, remainingTasks, computingOffload, NULL),
+      m_MinCommSize(minCommSize), m_MaxCommSize(maxCommSize),
+      m_proc_size(proc_size), m_sub_time(sub_time), m_next_task(next_task) {
+  ispd_debug("Trace workload criado \n");
+}
+
 [[nodiscard]] TwoStageUniformWorkload::TwoStageUniformWorkload(
     const std::string &user, const unsigned remainingTasks,
     const double computingOffload, const TwoStageDistribution procDist,
@@ -186,6 +197,13 @@ twoStage(const std::string &user, const unsigned remainingTasks,
                                      std::move(interarrivalDist));
 }
 
-NullWorkload *null(const std::string &user) { return new NullWorkload(user); }
+TracesWorkload *traces(const std::string &user, const unsigned remainingTasks,
+                       const double computingOffload, const double minCommSize,
+                       const double maxCommSize, std::vector<double> proc_size,
+                       std::vector<double> sub_time, int next_task) {
+  return new TracesWorkload(user, remainingTasks, computingOffload, minCommSize,
+                            maxCommSize, proc_size, sub_time, next_task);
+}
+
 
 }; // namespace ispd::workload

@@ -96,6 +96,7 @@ struct machine {
       /// Update the machine's queueing model information.
       s->cores_free_time[core_index] = tw_now(lp) + departure_delay;
 
+    ispd_debug("%lf %lf %lf", proc_size, proc_time, departure_delay);
       tw_event *const e = tw_event_new(msg->previous_service_id,
                                        g_tw_lookahead + departure_delay, lp);
       ispd_message *const m = static_cast<ispd_message *>(tw_event_data(e));
